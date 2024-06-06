@@ -1,0 +1,74 @@
+﻿@page "/Persons"
+@inject IPersonService PersonService
+@inject NavigationManager NavigationManager
+
+<AuthorizeView>
+    <Authorized>
+        <h3>Persons</h3>
+        <button type="button" class="btn btn-dark" @onclick="CreateNewPerson"><span class="oi oi-plus"></span> Create New Person</button>
+
+
+        @if (!PersonService.Persons.Any())
+        {
+            <h4>No person registered</h4>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Age</th>
+                        <th>Number</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var Person in PersonService.Persons)
+                    {
+                        <tr>
+                            <td>@Person.FirstName</td>
+                            <td>@Person.LastName</td>
+                            <td>@Person.Age</td>
+                            <td>@Person.Number</td>
+                            <td>
+                                <button type="button" class="btn btn-dark" @onclick="(() => ShowPerson(Person.Id))"><span class="oi oi-pencil"></span></button>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger" @onclick="(() => DeletePerson(Person.Id))"><span class="oi oi-circle-x"></span></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <Index></Index>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await PersonService.GetAllPersons();
+    }
+
+    void ShowPerson(int id)
+    {
+        NavigationManager.NavigateTo($"/person/{id}");
+    }
+
+    async Task DeletePerson(int id)
+    {
+        await PersonService.DeletePerson(id);
+
+    }
+
+    void CreateNewPerson()
+    {
+        NavigationManager.NavigateTo("/person");
+    }
+}

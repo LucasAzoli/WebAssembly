@@ -1,0 +1,74 @@
+﻿@page "/person"
+@page "/person/{id:int}"
+@inject IPersonService PersonService
+@inject NavigationManager NavigationManager
+
+@if (Id is null)
+{
+    <h3>Create a new Person</h3>
+}
+else
+{
+    <h3>Edit @person.FirstName</h3>
+}
+
+<EditForm Model="person" OnSubmit="HandleSubmit">
+    <div>
+        <label for="firstName">First Name</label>
+        <input id="firstName" @bind-value="person.FirstName" class="form-control"/>
+    </div>
+    <div>
+        <label for="lastName">Last Name</label>
+        <input id="lastName" @bind-value="person.LastName" class="form-control" />
+    </div>
+    <div>
+        <label for="age">Age</label>
+        <input id="age" @bind-value="person.Age" class="form-control" />
+    </div>
+    <div>
+        <label for="number">Phone</label>
+        <input id="number" @bind-value="person.Number" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-dark">@btnText</button>
+    <button type="button" class="btn btn-danger" @onclick="DeletePerson">Delete</button>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    string btnText = string.Empty;
+
+    projeto.Shared.Models.Person? person = new projeto.Shared.Models.Person { };
+
+    protected override void OnInitialized()
+    {
+        btnText = Id == null ? "Create new Person" : "Edit Person data";
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id is not null)
+        {
+            var result = await PersonService.GetPerson((int)Id);
+            if (result is not null)
+                person = result;
+            else
+                NavigationManager.NavigateTo("/Persons");
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if (Id is null)
+            await PersonService.AddPerson(person);
+        else
+            await PersonService.UpdatePerson((int)Id, person);
+    }
+
+    async Task DeletePerson()
+    {
+        await PersonService.DeletePerson((int)Id);
+    }
+}
